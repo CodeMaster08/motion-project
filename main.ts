@@ -3,37 +3,11 @@ namespace SpriteKind {
     export const cloud = SpriteKind.create()
     export const landpad = SpriteKind.create()
     export const bird = SpriteKind.create()
+    export const dead = SpriteKind.create()
 }
-controller.up.onEvent(ControllerButtonEvent.Pressed, function () {
-    copter.vy += -1
-})
-controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
-    copter.vx += -1
-})
-sprites.onCreated(SpriteKind.bird, function (sprite) {
-    sprite.setImage(img`
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . f . . . . . . . 
-        . . f . . . . . f . . . . . . . 
-        . . . f . . . . f . . . f f . . 
-        . . . . f f f f f f f f f f . . 
-        . . . f . . . . f . . . f f . . 
-        . . f . . . . . f . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        `)
-    sprite.x = randint(16, scene.screenWidth() - 16)
-    sprite.y = randint(75, scene.screenHeight() - 75)
-})
-controller.right.onEvent(ControllerButtonEvent.Pressed, function () {
-    copter.vx += 1
+sprites.onOverlap(SpriteKind.Player, SpriteKind.Projectile, function (sprite, otherSprite) {
+    otherSprite.destroy()
+    info.changeScoreBy(1)
 })
 sprites.onCreated(SpriteKind.cloud, function (sprite) {
     sprite.setImage(img`
@@ -54,49 +28,46 @@ sprites.onCreated(SpriteKind.cloud, function (sprite) {
         . . . . . . . . . . . . . . . . 
         . . . . . . . . . . . . . . . . 
         `)
-    sprite.x = randint(16, scene.screenWidth() - -16)
+    sprite.x = randint(16, scene.screenWidth() - 16)
     sprite.y = randint(75, scene.screenHeight() - 75)
 })
-controller.down.onEvent(ControllerButtonEvent.Pressed, function () {
-    copter.vy += 1
+sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSprite) {
+    otherSprite.destroy()
+    info.changeScoreBy(1)
 })
-sprites.onOverlap(SpriteKind.copter, SpriteKind.cloud, function (sprite, otherSprite) {
-    sprite.x += -1 * sprite.vx
-    sprite.y += -1 * sprite.vy
-    sprite.vx = 0
-    sprite.vy = 0
-    otherSprite.y += -1
-    pause(100)
-    otherSprite.y += 1
-})
-sprites.onOverlap(SpriteKind.copter, SpriteKind.bird, function (sprite, otherSprite) {
-    otherSprite.vy += -20
-})
-sprites.onOverlap(SpriteKind.bird, SpriteKind.cloud, function (sprite, otherSprite) {
-    otherSprite.x += 8
-})
-let copter: Sprite = null
-game.splash("spawnCloud")
+let projectile: Sprite = null
+let projectile2: Sprite = null
+let choice = 0
+info.setScore(0)
+info.startCountdown(30)
 scene.setBackgroundColor(9)
-copter = sprites.create(img`
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . f . . . . . . f . . . . . 
-    . . . f f f f f f f f . . . . . 
-    . . . . . . . f . . . . . . . . 
-    . f . . . . . f . . . . . . . . 
-    . f . . 6 6 6 6 6 6 6 . . . . . 
-    . f . . 6 6 6 6 6 1 1 6 6 . . . 
-    . . f f 6 6 6 6 6 1 1 1 6 . . . 
-    . . . . 6 6 6 6 6 1 1 1 6 . . . 
-    . . . . 6 6 6 6 6 6 6 6 . . . . 
-    . . . . . f . . . . f . . . . . 
-    . . . . . f . . . . f . . . . . 
-    . . . f f f f f f f f f . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    `, SpriteKind.copter)
-copter.setStayInScreen(true)
+let main_character = sprites.create(img`
+    ......ffff..............
+    ....fff22fff............
+    ...fff2222fff...........
+    ..fffeeeeeefff..........
+    ..ffe222222eef..........
+    ..fe2ffffff2ef..........
+    ..ffffeeeeffff......ccc.
+    .ffefbf44fbfeff....cddc.
+    .ffefbf44fbfeff...cddc..
+    .fee4dddddd4eef.ccddc...
+    fdfeeddddd4eeffecddc....
+    fbffee4444ee4fddccc.....
+    fbf4f222222f1edde.......
+    fcf.f222222f44ee........
+    .ff.f445544f............
+    ....ffffffff............
+    .....ff..ff.............
+    ........................
+    ........................
+    ........................
+    ........................
+    ........................
+    ........................
+    ........................
+    `, SpriteKind.Player)
+main_character.setStayInScreen(true)
 let cloud1 = sprites.create(img`
     . . . . . . . . . . . . . . . . 
     . . . . . . . . . . . . . . . . 
@@ -169,57 +140,111 @@ let cloud4 = sprites.create(img`
     . . . . . . . . . . . . . . . . 
     . . . . . . . . . . . . . . . . 
     `, SpriteKind.cloud)
-let bird = sprites.create(img`
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    `, SpriteKind.bird)
-let bird2 = sprites.create(img`
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    `, SpriteKind.bird)
-let bird3 = sprites.create(img`
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    `, SpriteKind.bird)
+game.onUpdate(function () {
+    main_character.x += controller.dx(100)
+    main_character.y += controller.dy(100)
+})
+game.onUpdateInterval(5000, function () {
+    choice = randint(0, 1)
+    if (choice == 0) {
+        projectile2 = sprites.createProjectileFromSide(img`
+            ........................
+            ........................
+            ........................
+            ........................
+            ..........ffff..........
+            ........ff1111ff........
+            .......fb111111bf.......
+            .......f11111111f.......
+            ......fd11111111df......
+            ......fd11111111df......
+            ......fddd1111dddf......
+            ......fbdbfddfbdbf......
+            ......fcdcf11fcdcf......
+            .......fb111111bf.......
+            ......fffcdb1bdffff.....
+            ....fc111cbfbfc111cf....
+            ....f1b1b1ffff1b1b1f....
+            ....fbfbffffffbfbfbf....
+            .........ffffff.........
+            ...........fff..........
+            ........................
+            ........................
+            ........................
+            ........................
+            `, 50, 0)
+        projectile2.setPosition(0, randint(10, 110))
+    } else {
+        projectile2 = sprites.createProjectileFromSide(img`
+            ........................
+            ........................
+            ........................
+            ........................
+            ..........ffff..........
+            ........ff1111ff........
+            .......fb111111bf.......
+            .......f11111111f.......
+            ......fd11111111df......
+            ......fd11111111df......
+            ......fddd1111dddf......
+            ......fbdbfddfbdbf......
+            ......fcdcf11fcdcf......
+            .......fb111111bf.......
+            ......fffcdb1bdffff.....
+            ....fc111cbfbfc111cf....
+            ....f1b1b1ffff1b1b1f....
+            ....fbfbffffffbfbfbf....
+            .........ffffff.........
+            ...........fff..........
+            ........................
+            ........................
+            ........................
+            ........................
+            `, -50, 0)
+        projectile2.setPosition(160, randint(10, 110))
+    }
+})
+game.onUpdateInterval(500, function () {
+    choice = randint(0, 1)
+    if (choice == 0) {
+        projectile = sprites.createProjectileFromSide(img`
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . f . . . . . . . 
+            . . f . . . . . f . . . . . . . 
+            . . . f . . . . f . . . f f . . 
+            . . . . f f f f f f f f f f . . 
+            . . . f . . . . f . . . f f . . 
+            . . f . . . . . f . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            `, 50, 0)
+        projectile.setPosition(0, randint(10, 110))
+    } else {
+        projectile = sprites.createProjectileFromSide(img`
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . f . . . . . . . 
+            . . f . . . . . f . . . . . . . 
+            . . . f . . . . f . . . f f . . 
+            . . . . f f f f f f f f f f . . 
+            . . . f . . . . f . . . f f . . 
+            . . f . . . . . f . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            `, -50, 0)
+        projectile.setPosition(160, randint(10, 110))
+    }
+})
