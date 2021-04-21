@@ -4,10 +4,15 @@ namespace SpriteKind {
     export const landpad = SpriteKind.create()
     export const bird = SpriteKind.create()
     export const dead = SpriteKind.create()
+    export const Projectile2 = SpriteKind.create()
 }
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Projectile, function (sprite, otherSprite) {
     otherSprite.destroy()
     info.changeScoreBy(1)
+})
+sprites.onOverlap(SpriteKind.Player, SpriteKind.Projectile2, function (sprite, otherSprite) {
+    otherSprite.destroy()
+    info.changeScoreBy(-3)
 })
 sprites.onCreated(SpriteKind.cloud, function (sprite) {
     sprite.setImage(img`
@@ -31,12 +36,8 @@ sprites.onCreated(SpriteKind.cloud, function (sprite) {
     sprite.x = randint(16, scene.screenWidth() - 16)
     sprite.y = randint(75, scene.screenHeight() - 75)
 })
-sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSprite) {
-    otherSprite.destroy()
-    info.changeScoreBy(1)
-})
-let projectile: Sprite = null
 let projectile2: Sprite = null
+let projectile: Sprite = null
 let choice = 0
 info.setScore(0)
 info.startCountdown(30)
@@ -144,7 +145,48 @@ game.onUpdate(function () {
     main_character.x += controller.dx(100)
     main_character.y += controller.dy(100)
 })
-game.onUpdateInterval(5000, function () {
+game.onUpdateInterval(500, function () {
+    choice = randint(0, 1)
+    if (choice == 0) {
+        projectile = sprites.createProjectileFromSide(img`
+            ..............................
+            ..............................
+            ..............................
+            ..............................
+            ..............................
+            ..............................
+            ..............................
+            ..............................
+            ..............................
+            ..............................
+            ..............................
+            ..............................
+            ............444444fff.........
+            ...........442244fffff........
+            .........4442244fffffff.......
+            ........42244444fffffff.......
+            ........44244244fffffff.......
+            ..........4442244fffff........
+            ...........4442244fff.........
+            ..............4444............
+            ..............................
+            ..............................
+            ..............................
+            ..............................
+            ..............................
+            ..............................
+            ..............................
+            ..............................
+            ..............................
+            ..............................
+            `, 50, 0)
+        projectile.setPosition(0, randint(10, 110))
+    } else {
+        projectile = sprites.createProjectileFromSide(assets.image`fireball`, -50, 0)
+        projectile.setPosition(160, randint(10, 110))
+    }
+})
+game.onUpdateInterval(3000, function () {
     choice = randint(0, 1)
     if (choice == 0) {
         projectile2 = sprites.createProjectileFromSide(img`
@@ -174,6 +216,7 @@ game.onUpdateInterval(5000, function () {
             ........................
             `, 50, 0)
         projectile2.setPosition(0, randint(10, 110))
+        projectile2.setKind(SpriteKind.Projectile2)
     } else {
         projectile2 = sprites.createProjectileFromSide(img`
             ........................
@@ -202,49 +245,5 @@ game.onUpdateInterval(5000, function () {
             ........................
             `, -50, 0)
         projectile2.setPosition(160, randint(10, 110))
-    }
-})
-game.onUpdateInterval(500, function () {
-    choice = randint(0, 1)
-    if (choice == 0) {
-        projectile = sprites.createProjectileFromSide(img`
-            . . . . . . . . . . . . . . . . 
-            . . . . . . . . . . . . . . . . 
-            . . . . . . . . . . . . . . . . 
-            . . . . . . . . . . . . . . . . 
-            . . . . . . . . . . . . . . . . 
-            . . . . . . . . f . . . . . . . 
-            . . f . . . . . f . . . . . . . 
-            . . . f . . . . f . . . f f . . 
-            . . . . f f f f f f f f f f . . 
-            . . . f . . . . f . . . f f . . 
-            . . f . . . . . f . . . . . . . 
-            . . . . . . . . . . . . . . . . 
-            . . . . . . . . . . . . . . . . 
-            . . . . . . . . . . . . . . . . 
-            . . . . . . . . . . . . . . . . 
-            . . . . . . . . . . . . . . . . 
-            `, 50, 0)
-        projectile.setPosition(0, randint(10, 110))
-    } else {
-        projectile = sprites.createProjectileFromSide(img`
-            . . . . . . . . . . . . . . . . 
-            . . . . . . . . . . . . . . . . 
-            . . . . . . . . . . . . . . . . 
-            . . . . . . . . . . . . . . . . 
-            . . . . . . . . . . . . . . . . 
-            . . . . . . . . f . . . . . . . 
-            . . f . . . . . f . . . . . . . 
-            . . . f . . . . f . . . f f . . 
-            . . . . f f f f f f f f f f . . 
-            . . . f . . . . f . . . f f . . 
-            . . f . . . . . f . . . . . . . 
-            . . . . . . . . . . . . . . . . 
-            . . . . . . . . . . . . . . . . 
-            . . . . . . . . . . . . . . . . 
-            . . . . . . . . . . . . . . . . 
-            . . . . . . . . . . . . . . . . 
-            `, -50, 0)
-        projectile.setPosition(160, randint(10, 110))
     }
 })
